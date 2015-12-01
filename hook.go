@@ -60,10 +60,19 @@ func (hook Hook) Fire(entry *logrus.Entry) error {
 			if strMsg, ok := entry.Data["msg"].(string); ok {
 				errorTxt.WriteString("- " + strMsg)
 			}
+		} else {
+			if entry.Message != "" {
+				errorTxt.WriteString("- " + entry.Message)
+			}
 		}
+
 		errorMsg = fmt.Errorf(errorTxt.String())
 	} else {
-		errorMsg = errors.New(entry.Data["msg"].(string))
+		if msg, ok := entry.Data["msg"]; ok && msg != nil {
+			errorMsg = errors.New(entry.Data["msg"].(string))
+		} else {
+			errorMsg = errors.New(entry.Message)
+		}
 	}
 
 	severity := rollbar.ERR
